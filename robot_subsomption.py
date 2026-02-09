@@ -1,11 +1,12 @@
+
 from robot import * 
 
-nb_robots = 1
+nb_robots = 0
 debug = True
 
 class Robot_player(Robot):
 
-    team_name = "robot_braitenberg_avoider"
+    team_name = "Dumb"
     robot_id = -1
     iteration = 0
 
@@ -40,10 +41,8 @@ class Robot_player(Robot):
                 print ("\trobot's name (if relevant)      =",sensor_robot)
                 print ("\trobot's team (if relevant)      =",sensor_team)
 
-
-        #version 1 : assez vite, mais pas très intelligent
-        translation = sensors[sensor_front]*0.5
-        rotation = 1-sensors[sensor_front]+sensors[sensor_front_left]-sensors[sensor_front_right]
+        translation = sensors[sensor_front]*0.5 # A MODIFIER
+        rotation = 0.5 # A MODIFIER
 
         self.iteration = self.iteration + 1        
         return translation, rotation, False

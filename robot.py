@@ -37,4 +37,3 @@ class Robot:
         translation, rotation = 0, 0
         ask_for_reset = False
         return translation, rotation, ask_for_reset
-
