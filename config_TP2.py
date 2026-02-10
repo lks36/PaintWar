@@ -4,7 +4,7 @@ import arenas
 
 # general -- first three parameters can be overwritten with command-line arguments (cf. "python tetracomposibot.py --help")
 
-display_mode = 1
+display_mode = 0
 arena = 1
 position = False 
 
@@ -33,5 +33,5 @@ def initialize_robots(arena_size=-1, particle_box=-1): # particle_box: size of t
     x_center = arena_size // 2 - particle_box / 2
     y_center = arena_size // 2 - particle_box / 2
     robots = []
-    robots.append(robot_randomsearch.Robot_player(x_center, y_center, 0, name="My Robot", team="A",evaluations=evaluations,it_per_evaluation=it_per_evaluation)) # start from left: 4, y_center
+    robots.append(randomsearch2.Robot_player(x_center, y_center, 0, name="My Robot", team="A",evaluations=evaluations,it_per_evaluation=it_per_evaluation)) # start from left: 4, y_center
     return robots
