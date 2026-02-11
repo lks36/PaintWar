@@ -22,6 +22,9 @@ display_time_stats = False
 
 import robot_challenger
 import robot_champion
+import robot_challenger_autre
+import robot_challenger_autre1
+import robot_challenger_autre2
 
 def initialize_robots(arena_size=-1, particle_box=-1): # particle_box: size of the robot enclosed in a square
     global position
@@ -38,7 +41,7 @@ def initialize_robots(arena_size=-1, particle_box=-1): # particle_box: size of t
         orientation_challenger = 0
     robots = []
     for i in range(4):
-        robots.append(robot_challenger.Robot_player(x_init_pos[0], arena_size//2-16+i*8, orientation_champion, name="", team="A"))
+        robots.append(robot_challenger_autre2.Robot_player(x_init_pos[0], arena_size//2-16+i*8, orientation_champion, name="", team="A"))
     for i in range(4):
         robots.append(robot_champion.Robot_player(x_init_pos[1], arena_size//2-16+i*8, orientation_challenger, name="", team="B"))
     return robots
