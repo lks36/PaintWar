@@ -1,104 +1,148 @@
 # Projet "robotique" IA&Jeux 2025
 #
-# Binome:
-#  Prénom Nom No_étudiant/e : _________
-#  Prénom Nom No_étudiant/e : _________
 #
 # check robot.py for sensor naming convention
 # all sensor and motor value are normalized (from 0.0 to 1.0 for sensors, -1.0 to +1.0 for motors)
 
-from robot import *
-import math
-
+from robot import * 
+import random
 
 nb_robots = 0
 
 class Robot_player(Robot):
 
-    team_name = "Challenger"  # vous pouvez modifier le nom de votre équipe
+    team_name = "RobotChallenger"  # vous pouvez modifier le nom de votre équipe
     robot_id = -1             # ne pas modifier. Permet de connaitre le numéro de votre robot.
     memory = 0                # vous n'avez le droit qu'a une case mémoire qui doit être obligatoirement un entier
 
     def __init__(self, x_0, y_0, theta_0, name="n/a", team="n/a"):
         global nb_robots
         self.robot_id = nb_robots
-        nb_robots += 1
+        nb_robots+=1
         super().__init__(x_0, y_0, theta_0, name="Robot "+str(self.robot_id), team=self.team_name)
 
     def step(self, sensors, sensor_view=None, sensor_robot=None, sensor_team=None):
-        # On utilise memory comme un compteur cyclique de 0 à 100
-        self.memory = (self.memory + 1) % 100
-
-        # Normalisation des capteurs (0.0 = Mur touche, 1.0 = Vide infini)
-        # Note: selon ton robot.py, vérifie si l'ordre est bien [Front, FrontLeft, ...]
-        # Ici on suppose l'ordre standard : 0=Front, 1=FrontLeft, 2=Left... 
-        # Si ton robot n'a que 3 senseurs, adapte les index si besoin.
-        s_front = sensors[sensor_front]
-        s_left  = sensors[sensor_front_left]
-        s_right = sensors[sensor_front_right]
-
-        # --- 1. SECURITÉ & BLOCAGE (Priorité Absolue) ---
-        
-        # Si on est COLLÉ au mur (< 0.15) ou à un robot, on recule violemment.
-        # C'est vital pour les culs-de-sac de l'Arena 7.
-        if s_front < 0.15:
-            # On recule en tournant (pour ne pas refaire la même erreur)
-            # L'ID définit le sens de rotation pour éviter que toute l'équipe fasse pareil
-            rot_dir = 1.0 if self.robot_id % 2 == 0 else -1.0
-            return -1.0, rot_dir, False
-
-        # --- 2. EVITEMENT D'EQUIPE (Dispersion) ---
-        
-        # Si je vois un pote devant, je fais demi-tour IMMÉDIAT.
-        # sensor_view[sensor_front] == 2 signifie "Je vois un robot"
-        if sensor_view[sensor_front] == 2 and sensor_team[sensor_front] == self.team_name:
-            return -0.5, 1.0, False # Demi-tour
-
-        # --- 3. NAVIGATION INTELLIGENTE ---
-
-        translation = 1.0 # Par défaut: Vitesse Max
-        rotation = 0.0
-
-        # CAS A : COULOIR OU MUR (Pacman / Labyrinthe)
-        # Si les murs latéraux sont proches, on active le "Centrage"
-        if s_left < 0.8 or s_right < 0.8:
-            # Formule magique : (Gauche - Droite)
-            # Si Gauche < Droite (mur à gauche), le résultat est négatif -> On tourne à Droite.
-            # Le facteur 1.5 assure la réactivité sans osciller trop fort.
-            rotation = (s_left - s_right) * 1.5
-            
-            # Si un mur arrive devant, on tourne plus fort
-            if s_front < 0.6:
-                translation = 0.6 # On ralentit un peu
-                # On accentue la rotation vers la sortie
-                if s_left > s_right: 
-                    rotation = 1.0 # Gauche est libre
-                else: 
-                    rotation = -1.0 # Droite est libre
-
-        # CAS B : ESPACE VIDE (Arena 0 / Arena 1)
-        # Si on est en plein milieu de rien (tout > 0.8), on ne va pas tout droit !
-        # Une ligne droite est inefficace. On fait une SINUSOÏDE (zigzag).
-        else:
-            # Utilisation de memory pour créer une onde
-            # Le robot ondule pour peindre une bande large au lieu d'une ligne fine
-            if self.memory < 50:
-                rotation = 0.3 # Virage léger gauche
+        sensor_to_wall = [] #liste des sensors en ne prennant en compte que les murs
+        sensor_to_robot = [] #liste des sensors en ne prennant en compte que les robots
+        sensor_to_advrobot= [] #liste des sensors en ne prennant en compte que les robots adverses
+        for i in range (0,8): #remplissage des listes 
+            if  sensor_view[i] == 1:
+                sensor_to_wall.append(sensors[i])
+                sensor_to_robot.append(1.0)
+                sensor_to_advrobot.append(1.0) 
+            elif sensor_view[i] ==2:
+                sensor_to_wall.append(1.0)
+                sensor_to_robot.append(sensors[i])
+                if sensor_team[i]!=self.team_name:
+                    sensor_to_advrobot.append(sensors[i])
+                else:
+                    sensor_to_advrobot.append(1.0) 
+                                    
             else:
-                rotation = -0.3 # Virage léger droite
+                sensor_to_wall.append(1.0)  
+                sensor_to_robot.append(1.0)
+                sensor_to_advrobot.append(1.0)
                 
-            # Petit boost de dispersion au début basé sur l'ID
-            if self.robot_id == 0: rotation += 0.1
-            if self.robot_id == 1: rotation -= 0.1
+        def is_near():#renvoie vrai si un obstacle est proche
+            for i in (0,1,7):
+                if sensors[i]<= 0.15:
+                    return True
+            return False
 
-        # --- 4. OPTIMISATION DE LA VITESSE ---
+        def is_far():  
+            return sensor_to_wall[sensor_right] >= 0.8 and sensor_to_wall[sensor_rear_right] >= 0.8
+                 
+        def is_adv_here():#renvoie vrai si un robot adverse est a porte
+            for i in sensor_to_advrobot:
+                if i != 1.0:
+                    return True 
+            return False
+            
+        def is_not_adv_near():#renvoie vrai si un obstacle autre qu'un adversaire est très proche
+            for i in range (0,8):
+                if sensors[i]<=0.20 and sensors[i]!= sensor_to_advrobot[i]:
+                     return True
+            return False
         
-        # Si le chemin devant est dégagé, on force 1.0
-        # Sinon, la vitesse est proportionnelle à la distance du mur
-        if s_front > 0.5:
-            translation = 1.0
-        else:
-            # On ne descend jamais en dessous de 0.2 pour ne pas caler
-            translation = max(0.2, s_front)
+       	    
+        def ally_near():#renvoie vrai si un obstacle autre qu'un adversaire est très proche
+            for i in range (0,8):
+                if sensors[i]<=0.20 and sensor_robot[i]==self.team_name:
+                     return True
+            return False
+                     	
+                 
+        def hate_list(sensor_list):
+            sensor_value = [7.0, -9.5, -8, -8, 0.5, 8, 8.5, 8]
+            rotation = 0.0
+            for i in range(8):
+                d= sensor_list[i]
+                new_rotation = ((((1-d)*sensor_value[i]*(1+(1-d))))*(random.random()*0.2))
+                if abs(new_rotation) > abs(rotation):
+                    rotation = new_rotation
+            return rotation 
+        
+        
+           
+            
+        def follow_wall(sensor_list):
+            """Les capteurs front_left/front_right sont positifs pour s'éloigner du murs, les capteurs left/right sont négatif pour se rapprocher du murs, la somme fait qu'il reste a une distance un peu constante du mur"""
+            sensor_value = [6.2,-8,5,0,0,0,-6.8,9.2]
+            rotation = 0.0
+            for i in range(8):
+                d = sensor_list[i]
+                rotation += (1-d)*sensor_value[i]
+            return rotation
+
+        
+        def love_list(sensor_list):
+            sensor_value = [7.0, -8, -6.5, -8, 0, 8.5, 8, 8.5]
+            rotation = 0.0
+            for i in range(8):
+                d = sensor_list[i]
+                rotation += ( d * sensor_value[i]*(1+(1-d)))
+            return rotation
+
+        
+        if self.memory == 0:
+            if self.robot_id==0:
+                self.memory = 1
+            else :
+                self.memory = 0
+        translation = sensors[sensor_front] + sensors[sensor_front_left] + sensors[sensor_front_right]
+
+        if self.memory ==1:#mode passifique suivi de mur
+            if is_near():
+                rotation = hate_list(sensor_to_wall)
+                translation = sensors[sensor_front]*0.5+0.2
+            elif is_far():
+                rotation = 0.3*love_list(sensor_to_wall)
+                translation = sensors[sensor_front]*0.5+0.2
+            else:
+                rotation = 0.5 * follow_wall(sensor_to_wall)
+                translation = sensors[sensor_front]*0.9+0.3
+
+            if random.random() < 0.02:   
+                self.memory = 0
+            
+        else:#mode aggressif 
+            if is_not_adv_near():
+                rotation = hate_list(sensors)
+            else:
+                if is_adv_here():
+                    if ally_near():
+                        #evite que deux robots en bloque qu'un seul
+                        rotation = hate_list(sensors)
+                    else:
+                        rotation = love_list(sensor_to_advrobot)
+                else:
+                    rotation = hate_list(sensors)
+        
+            if ally_near():
+                #evite que deux robots en bloque qu'un seul
+                rotation = hate_list(sensors)
+
+            if random.random() < 0.02:   
+                self.memory = 1
 
         return translation, rotation, False

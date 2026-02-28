@@ -41,7 +41,6 @@ class Robot_player(Robot):
     def reset(self):
         super().reset()
 
-
     def step(self, sensors, sensor_view=None, sensor_robot=None, sensor_team=None):
         # cet exemple montre comment générer au hasard, et évaluer, des stratégies comportementales
         # Remarques:
@@ -97,6 +96,6 @@ class Robot_player(Robot):
                 print ("\trobot's name (if relevant)      =",sensor_robot)
                 print ("\trobot's team (if relevant)      =",sensor_team)
 
-        self.iteration = self.iteration + 1        
+        self.iteration = self.iteration + 1
 
         return translation, rotation, False

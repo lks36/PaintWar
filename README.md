@@ -1,3 +1,20 @@
+# Paint Wars - Multi-Agent Robotic Patrolling
+
+## Description du Projet
+Paint Wars est un projet d'étude consiste à faire une simulation de compétition robotique basée sur le problème classique de la **patrouille multi-agents**. Deux équipes de 4 robots (Rouge vs Bleue) s'affrontent dans une arène discrétisée en cases. 
+* **Objectif :** Posséder le plus grand nombre de cases à la fin du temps imparti. 
+* **Règle :** Une case appartient à l'équipe du dernier robot l'ayant visitée.
+
+Ce projet a été réalisé dans le cadre du module de robotique mobile, mettant l'accent sur l'intelligence décentralisée et les comportements émergents.
+
+## Architecture de Contrôle
+L'intelligence des robots repose sur une architecture hybride respectant des contraintes de mémoire strictes (un seul entier pour la mémoire interne) et une absence de communication directe :
+
+* **Système de Décision :** Implémentation d'une [Architecture de Subsomption / Arbre de Décision] pour la sélection des comportements.
+* **Comportements de Bas Niveau :** Utilisation de contrôleurs de type **Braitenberg** pour l'évitement d'obstacles et le suivi de murs.
+* **Optimisation par Algorithme Génétique :** Certains robots utilisent des poids synaptiques optimisés par évolution artificielle pour maximiser la couverture de zone.
+* **Stratégies Spécialisées :** Identification des robots via `robot_id` pour permettre des rôles distincts (ex: explorateurs vs intercepteurs).
+
 # =-= TETRACOMPOSIBOT =-=
 
 _"With the Tetracomposibot it has now become possible to play and compose REAL simple robot demo"_
@@ -24,11 +41,11 @@ _"With the Tetracomposibot it has now become possible to play and compose REAL s
 # Exécution du simulateur
 
 Pour lancer une expérience:
-- méthode 1: en ligne de commande, _python tetracomposibot.py_. Utilise config.py comme fichier par défaut.
-- méthode 2: en ligne de commande, _python tetracomposibot.py <fichier config>_. Par exemple: _python tetracomposibot.py config_Paintwars_. Vous pouvez créer/modifier votre fichier de configuration comme il vous plaira.
-- méthode 3: en ligne de commande, avec des paramètres. Cf. _python tetracomposibot.py -h_. Par exemple: _python tetracomposibot.py config_Paintwars 1 False 0_
+```bash
+./go_tournament_eval
+```
 
-# Création d'un nouveau projet
+# Fichier
 
 Fichier à ne **pas** modifier (cas général):
 - le fichier _arenas.py_ contient la définition de toutes les arènes disponibles (100x100 pixels, divisés en 25x25 cases)
@@ -37,13 +54,6 @@ Fichier à ne **pas** modifier (cas général):
 Fichiers utilisateurs, modifiables:
 - Robot: Le comportement d'un type de robot est défini dans un fichier dédié, par exemple _robot_wanderer.py_. Ce fichier doit spécifier trois fonctions: _init_, _reset_ et _step_. La fonction _step_ permet de spécifier le comportement du robot à chaque pas de temps (vitesse normale: 60 appels par seconde). Cette fonction retourne la vitesse de translation souhaitée, la vitesse de rotation souhaitée, et un booléen pour éventuellement demander une remise à zéro de la simulation (False: pas de remise à zéro -- c'est le mode normal).
 - Configuration: Le dispositif expérimental (choix de l'arène, rendu graphique, nombre d'itérations, etc.) sont définis dans un fichier Python de configuration, par exemple _config.py_. Ce fichier contient aussi une fonction permettant d'initialiser la position des robots au début de la simulation. Le fichier de configuration permet de fixer les paramètres généraux de la situation. Certains peuvent être écrasés en ligne de commande (numéro de l'arène, position de départ, vitesse de rendu, nombre maximum d'itérations). Les autres paramètres permettent de choisir quels sont les messages à afficher dans le terminal. Ce fichier contient aussi une fonction _initialize_robots_ permettant de placer les robots avant que la simulation ne commence. A noter que le simulateur traite des coordonnées continues pour chaque robot, dans les limites des dimensions de l'arène. Le simulateur utiliser une orientation absolue du robot dans l'arène, codée en degré (ex.:[0...360[ ou [-180,+180[)
-
-Pour créer un nouveau projet:
-1. créer un fichier configuration (cf. _config.py_ pour un exemple)
-2. créer un fichier robot (cf. _robot_wanderer.py_ pour un exemple)
-3. lancer la simulation en donnant le fichier configuration en paramètre (avec ou sans l'extension .py): _python tetracomposibot.py ma_config_
-
-cf. _python tetracomposibot.py -h_ pour voir quels sont les paramètres que l'on peut passer en ligne de commande.
 
 # Infos techniques
 
@@ -84,9 +94,3 @@ Les variables suivantes sont pré-définies pour permettre une utilisation plus 
 * _sensor_front_right = 7_
 
 Par exemple, _sensors[sensor_left]_ renvoie la distance normalisée (ie. entre 0.0 et 1.0) à l'obstacle s'il existe. _sensor_view[sensor_left_]_ renvoie le type d'obstacle (s'il existe).
-
-
-# F.A.Q
-
-* Q: la librairie Numba n'est pas installée ou ne fonctionne pas sur ma machine (problème pour utiliser njit)
-* R: utilisez tetracomposibot_noOpt.py -- plus lent, mais la seule dépendance nécessaire est pyGame
