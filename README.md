@@ -40,10 +40,11 @@ _"With the Tetracomposibot it has now become possible to play and compose REAL s
 
 # Exécution du simulateur
 
-Pour lancer une expérience:
+* Pour lancer une expérience:
 ```bash
 ./go_tournament_eval
 ```
+* ***Modifier*** dans fichier config_Paintwars_eval.py pour tester les différents types robots.
 
 # Fichier
 
